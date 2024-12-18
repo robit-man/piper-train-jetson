@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Exit immediately if a command exits with a non-zero status
+set -e
+
 # Script configuration
 BASE_DIR=$(dirname "$(realpath "$0")")
 DATASETS_DIR="$BASE_DIR/datasets"
@@ -28,6 +31,9 @@ backup_and_restore_torch() {
     TORCH_PATH=$(python3 -c 'import torch; print(torch.__path__[0])')
     CUSTOM_TORCH_BACKUP="/workspace/custom_torch_backup"
     cp -r "$TORCH_PATH" "$CUSTOM_TORCH_BACKUP"
+
+    echo "Upgrading pip..."
+    pip install --upgrade pip
 
     echo "Installing dependencies with pip..."
     pip install pip==23.3.1 setuptools wheel --root-user-action=ignore
@@ -65,12 +71,9 @@ run_docker_pipeline() {
         mkdir -p /workspace/training_output/lightning_logs
 
         # Check if preprocessed data exists and conditionally preprocess
-        if [ -d "/workspace/training_output" ] && [ \"\$(ls -A /workspace/training_output)\" ]; then
+        if [ -d \"/workspace/training_output\" ] && [ \"\$(ls -A /workspace/training_output 2>/dev/null)\" ]; then
             echo 'Preprocessed data already exists. Skipping preprocessing.'
         else
-            echo 'Cleaning existing training output...'
-            rm -rf /workspace/training_output
-
             echo 'Preprocessing dataset...'
             python3 -m piper_train.preprocess \
                 --language en \
@@ -81,25 +84,44 @@ run_docker_pipeline() {
                 --sample-rate 22050
         fi
 
-        # Train the model
-        echo 'Training model...'
+        # Ensure checkpoints directory exists
         mkdir -p /workspace/checkpoints
-        PYTHONPATH=\"/workspace/piper/src/python\" python3 -m piper_train \
-            --dataset-dir /workspace/training_output \
-            --batch-size 8 \
-            --validation-split 0.05 \
-            --max-epochs 10000 \
-            --precision 32 \
-            --quality medium \
-            --gpus 1 
+
+        # Check for existing checkpoints and decide whether to include --ckpt_path
+        if [ -d \"/workspace/checkpoints\" ] && [ \"\$(ls -A /workspace/checkpoints/*.ckpt 2>/dev/null)\" ]; then
+            LATEST_CKPT=\$(ls -t /workspace/checkpoints/*.ckpt | head -n1)
+            echo \"Found checkpoint: \$LATEST_CKPT. Resuming training.\"
+            PYTHONPATH=\"/workspace/piper/src/python\" python3 -m piper_train \
+                --dataset-dir /workspace/training_output \
+                --batch-size 8 \
+                --validation-split 0.05 \
+                --max-epochs 10000 \
+                --precision 32 \
+                --quality medium \
+                --gpus 1 \
+                --ckpt_path \$LATEST_CKPT
+        else
+            echo \"No checkpoint found. Starting training from scratch.\"
+            PYTHONPATH=\"/workspace/piper/src/python\" python3 -m piper_train \
+                --dataset-dir /workspace/training_output \
+                --batch-size 8 \
+                --validation-split 0.05 \
+                --max-epochs 10000 \
+                --precision 32 \
+                --quality medium \
+                --gpus 1
+        fi
+
+        # Find the latest checkpoint after training
+        NEW_LATEST_CKPT=\$(ls -t /workspace/checkpoints/*.ckpt | head -n1)
 
         # Export trained model
         echo 'Exporting model...'
         python3 -m piper_train.export_onnx \
-            /workspace/checkpoints/epoch=0-step=0.ckpt \
+            \$NEW_LATEST_CKPT \
             /workspace/training_output/model.onnx
         cp /workspace/training_output/config.json /workspace/training_output/model.onnx.json
-    "
+        "  # End of Docker command
 
     if [ $? -ne 0 ]; then
         echo "Training failed inside Docker. Dumping logs..."
