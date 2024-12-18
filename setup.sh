@@ -7,7 +7,7 @@ DATASET_DIR="$DATASETS_DIR/dataset"
 OUTPUT_DIR="$BASE_DIR/training_output"
 CHECKPOINT_DIR="$BASE_DIR/checkpoints"
 PIPER_DIR="$BASE_DIR/piper"
-PIPER_REPO_URL="https://github.com/rhasspy/piper.git"
+PIPER_REPO_URL="https://github.com/robit-man/piper-train-jetson.git"
 DOCKER_IMAGE="nvcr.io/nvidia/pytorch:24.07-py3-igpu"
 DOCKER_CONTAINER_NAME="piper-training-container"
 
