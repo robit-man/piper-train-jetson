@@ -97,7 +97,7 @@ run_docker_pipeline() {
         mkdir -p /workspace/checkpoints
         PYTHONPATH=\"/workspace/piper/src/python\" python3 -m piper_train \
             --dataset-dir /workspace/training_output \
-            --batch-size 16 \
+            --batch-size 8 \
             --validation-split 0.05 \
             --max-epochs 10000 \
             --precision 32 \
