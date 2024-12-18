@@ -1,3 +1,5 @@
+![bd13c6f5-7a3f-4262-9891-4259f17abbe0](https://github.com/user-attachments/assets/3147c3f9-a886-4bf9-b1cf-ce4781c82601)
+
 ![piporin](https://github.com/user-attachments/assets/693ea0aa-44d3-42a0-b4b4-95ec37af8879)
 
 A fast, local neural text to speech system that sounds great and is re-worked and optimized to execute training on Jetson AGX Orin Platforms using the latest cuda enabled torch container.
