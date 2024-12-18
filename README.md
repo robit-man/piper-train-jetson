@@ -3,7 +3,7 @@
 A fast, local neural text to speech system that sounds great and is optimized for the Agx ORIN.
 
 ## PRIMARY CHANGES
-### 1. UPDATED __MAIN__.py in piper/src/python/piper_train
+### 1. UPDATED __main__.py in piper/src/python/piper_train
 ### 2. UPDATED lightening.py in piper/src/python/piper_train/vits/
 ### 3. UPDATED commons.py in piper/src/python/piper_train/vits/
 ### 4. ADDED setup.sh to be run next to /datasets/dataset/wav + metadata.csv
