@@ -39,17 +39,6 @@ backup_and_restore_torch() {
     mv "$CUSTOM_TORCH_BACKUP" "$TORCH_PATH"
 }
 
-# Create compatibility layer for runtime injection
-create_compatibility_layer() {
-    echo "Creating compatibility layer for runtime injection..."
-    cat <<EOF > /workspace/compatibility_layer.py
-import sys
-import os
-sys.path.append("/workspace/piper/src/python")
-sys.path.append(os.path.join("/workspace", "piper", "src", "python", "vits"))
-EOF
-}
-
 # Run pipeline inside Docker container
 run_docker_pipeline() {
     echo "Starting Docker container..."
@@ -67,10 +56,6 @@ run_docker_pipeline() {
         $(declare -f backup_and_restore_torch)
         backup_and_restore_torch
 
-        # Create compatibility layer
-        $(declare -f create_compatibility_layer)
-        create_compatibility_layer
-
         # Install piper_train into Python environment
         echo 'Installing Piper module into Python path...'
         cd /workspace/piper/src/python
@@ -79,18 +64,22 @@ run_docker_pipeline() {
         # Ensure logger folder exists
         mkdir -p /workspace/training_output/lightning_logs
 
-        # Preprocess dataset
-        echo 'Cleaning existing training output...'
-        rm -rf /workspace/training_output
+        # Check if preprocessed data exists and conditionally preprocess
+        if [ -d "/workspace/training_output" ] && [ \"\$(ls -A /workspace/training_output)\" ]; then
+            echo 'Preprocessed data already exists. Skipping preprocessing.'
+        else
+            echo 'Cleaning existing training output...'
+            rm -rf /workspace/training_output
 
-        echo 'Preprocessing dataset...'
-        python3 -m piper_train.preprocess \
-            --language en \
-            --input-dir /workspace/datasets/dataset \
-            --output-dir /workspace/training_output \
-            --dataset-format ljspeech \
-            --single-speaker \
-            --sample-rate 22050
+            echo 'Preprocessing dataset...'
+            python3 -m piper_train.preprocess \
+                --language en \
+                --input-dir /workspace/datasets/dataset \
+                --output-dir /workspace/training_output \
+                --dataset-format ljspeech \
+                --single-speaker \
+                --sample-rate 22050
+        fi
 
         # Train the model
         echo 'Training model...'
@@ -102,7 +91,7 @@ run_docker_pipeline() {
             --max-epochs 10000 \
             --precision 32 \
             --quality medium \
-            --gpus 1
+            --gpus 1 
 
         # Export trained model
         echo 'Exporting model...'
