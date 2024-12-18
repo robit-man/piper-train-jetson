@@ -45,32 +45,59 @@ def rand_gumbel_like(x):
 
 
 def slice_segments(x, ids_str, segment_size=4):
-    ret = torch.zeros_like(x[:, :, :segment_size])
-    for i in range(x.size(0)):
-        idx_str = max(0, ids_str[i])
-        idx_end = idx_str + segment_size
-        ret[i] = x[i, :, idx_str:idx_end]
+    b, c, t = x.size()
+    ret = torch.zeros(b, c, segment_size, dtype=x.dtype, device=x.device)
+
+    for i in range(b):
+        idx_str = max(0, ids_str[i].item())  # Ensure idx_str is a Python int
+        idx_end = min(idx_str + segment_size, t)
+        actual_segment_size = idx_end - idx_str
+
+        if actual_segment_size > 0:
+            ret[i, :, :actual_segment_size] = x[i, :, idx_str:idx_end]
+        else:
+            _LOGGER.warning(
+                f"Empty slice for batch {i}: idx_str={idx_str}, idx_end={idx_end}, "
+                f"segment_size={segment_size}, input_tensor_size={t}"
+            )
+
     return ret
 
 
 def rand_slice_segments(x, x_lengths=None, segment_size=4):
-    b, d, t = x.size()
+    """
+    Randomly slices segments from input tensor `x`.
+    Args:
+        x (torch.Tensor): Input tensor of shape [B, C, T].
+        x_lengths (torch.Tensor or None): Actual lengths of each sample in the batch.
+        segment_size (int): Size of the segment to slice.
+    Returns:
+        Tuple[torch.Tensor, torch.Tensor]: Sliced tensor and start indices.
+    """
+    b, c, t = x.size()
+
     if x_lengths is None:
-        x_lengths = t
-    ids_str_max = x_lengths - segment_size + 1
-    ids_str = (torch.rand([b]).to(device=x.device) * ids_str_max).to(dtype=torch.long)
+        x_lengths = torch.full((b,), t, dtype=torch.long, device=x.device)
+        _LOGGER.info("x_lengths was None. Set to full length.")
+
+    # Clamp and convert `ids_str_max` into valid bounds
+    ids_str_max = torch.clamp(x_lengths - segment_size, min=0)
+    # Avoid division by zero
+    ids_str_max = torch.clamp(ids_str_max, min=1)
+    ids_str = torch.floor(torch.rand(b, device=x.device) * ids_str_max).long()
+
     ret = slice_segments(x, ids_str, segment_size)
     return ret, ids_str
 
 
 def get_timing_signal_1d(length, channels, min_timescale=1.0, max_timescale=1.0e4):
-    position = torch.arange(length, dtype=torch.float)
+    position = torch.arange(length, dtype=torch.float, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
     num_timescales = channels // 2
     log_timescale_increment = math.log(float(max_timescale) / float(min_timescale)) / (
         num_timescales - 1
     )
     inv_timescales = min_timescale * torch.exp(
-        torch.arange(num_timescales, dtype=torch.float) * -log_timescale_increment
+        torch.arange(num_timescales, dtype=torch.float, device=position.device) * -log_timescale_increment
     )
     scaled_time = position.unsqueeze(0) * inv_timescales.unsqueeze(1)
     signal = torch.cat([torch.sin(scaled_time), torch.cos(scaled_time)], 0)
@@ -92,7 +119,7 @@ def cat_timing_signal_1d(x, min_timescale=1.0, max_timescale=1.0e4, axis=1):
 
 
 def subsequent_mask(length: int):
-    mask = torch.tril(torch.ones(length, length)).unsqueeze(0).unsqueeze(0)
+    mask = torch.tril(torch.ones(length, length, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))).unsqueeze(0).unsqueeze(0)
     return mask
 
 
@@ -107,8 +134,15 @@ def fused_add_tanh_sigmoid_multiply(input_a, input_b, n_channels):
 
 
 def sequence_mask(length, max_length: Optional[int] = None):
+    if length is None:
+        if max_length is None:
+            raise ValueError("Either `length` or `max_length` must be provided.")
+        _LOGGER.warning("`length` is None. Creating a mask with all positions valid.")
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        mask = torch.ones((1, max_length), dtype=torch.bool, device=device)
+        return mask
     if max_length is None:
-        max_length = length.max()
+        max_length = length.max().item()
     x = torch.arange(max_length, dtype=length.dtype, device=length.device)
     return x.unsqueeze(0) < length.unsqueeze(1)
 
@@ -132,10 +166,14 @@ def generate_path(duration, mask):
 def clip_grad_value_(parameters, clip_value, norm_type=2):
     if isinstance(parameters, torch.Tensor):
         parameters = [parameters]
-    parameters = list(filter(lambda p: p.grad is not None, parameters))
+    parameters = [p for p in parameters if p.grad is not None]
+
+    if not parameters:
+        _LOGGER.warning("No gradients found for clipping.")
+        return 0
+
     norm_type = float(norm_type)
-    if clip_value is not None:
-        clip_value = float(clip_value)
+    clip_value = float(clip_value) if clip_value is not None else None
 
     total_norm = 0
     for p in parameters:
@@ -143,5 +181,6 @@ def clip_grad_value_(parameters, clip_value, norm_type=2):
         total_norm += param_norm.item() ** norm_type
         if clip_value is not None:
             p.grad.data.clamp_(min=-clip_value, max=clip_value)
+
     total_norm = total_norm ** (1.0 / norm_type)
     return total_norm
