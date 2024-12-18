@@ -1,6 +1,12 @@
 ![piporin](https://github.com/user-attachments/assets/693ea0aa-44d3-42a0-b4b4-95ec37af8879)
 
 A fast, local neural text to speech system that sounds great and is optimized for the Agx ORIN.
+
+## PRIMARY CHANGES
+### 1. UPDATED __MAIN__.py in piper/src/python/piper_train
+### 2. UPDATED lightening.py in piper/src/python/piper_train/vits/
+### 2. ADDED setup.sh to be run next to /datasets/dataset/wav + metadata.csv
+
 Piper is used in a [variety of projects](#people-using-piper).
 
 ``` sh
