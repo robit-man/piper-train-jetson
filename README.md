@@ -1,6 +1,6 @@
-![Piper logo](etc/logo.png)
+![piporin](https://github.com/user-attachments/assets/693ea0aa-44d3-42a0-b4b4-95ec37af8879)
 
-A fast, local neural text to speech system that sounds great and is optimized for the Raspberry Pi 4.
+A fast, local neural text to speech system that sounds great and is optimized for the Agx ORIN.
 Piper is used in a [variety of projects](#people-using-piper).
 
 ``` sh
