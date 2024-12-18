@@ -18,7 +18,7 @@ def main():
     # Argument parser
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset-dir", required=True, help="Path to pre-processed dataset directory")
-    parser.add_argument("--checkpoint-epochs", type=int, help="Save checkpoint every N epochs (default: 1)")
+    parser.add_argument("--checkpoint-epochs", type=int, default=1, help="Save checkpoint every N epochs (default: 1)")
     parser.add_argument("--quality", default="medium", choices=("x-low", "medium", "high"),
                         help="Quality/size of model (default: medium)")
     parser.add_argument("--resume_from_single_speaker_checkpoint",
@@ -30,6 +30,7 @@ def main():
     parser.add_argument("--precision", type=int, choices=[16, 32], default=32, help="Precision for training")
     parser.add_argument("--batch-size", type=int, default=16, help="Batch size for training")
     parser.add_argument("--validation-split", type=float, default=0.05, help="Validation split ratio")
+    parser.add_argument("--ckpt_path", type=str, default=None, help="Path to checkpoint to resume training from")  # New Argument
 
     args = parser.parse_args()
     _LOGGER.debug(args)
@@ -52,7 +53,13 @@ def main():
     # Trainer configuration
     callbacks = []
     if args.checkpoint_epochs:
-        checkpoint_callback = ModelCheckpoint(every_n_epochs=args.checkpoint_epochs)
+        checkpoint_callback = ModelCheckpoint(
+            dirpath=str(args.dataset_dir / "checkpoints"),
+            filename='epoch={epoch}-step={step}',
+            every_n_epochs=args.checkpoint_epochs,
+            save_top_k=-1,  # Save all checkpoints
+            save_last=True  # Always save the last checkpoint
+        )
         callbacks.append(checkpoint_callback)
         _LOGGER.debug("Checkpoints will be saved every %s epoch(s)", args.checkpoint_epochs)
 
@@ -110,8 +117,12 @@ def main():
         model.model_g.load_state_dict(model_single.model_g.state_dict(), strict=False)
         model.model_d.load_state_dict(model_single.model_d.state_dict(), strict=False)
 
-    # Start training
-    trainer.fit(model)
+    # Start training with optional checkpoint resumption
+    if args.ckpt_path:
+        _LOGGER.debug("Resuming training from checkpoint: %s", args.ckpt_path)
+        trainer.fit(model, ckpt_path=args.ckpt_path)
+    else:
+        trainer.fit(model)
 
 
 if __name__ == "__main__":
