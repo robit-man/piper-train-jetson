@@ -4,6 +4,9 @@
 
 A fast, local neural text to speech system that sounds great and is re-worked and optimized to execute training on Jetson AGX Orin Platforms using the latest cuda enabled torch container.
 
+![image](https://github.com/user-attachments/assets/4e8c566e-3120-48cb-9fd2-9e14f5b823b4)
+
+
 ## PRIMARY CHANGES
 ### 1. UPDATED [__main__.py](https://github.com/robit-man/piper-train-jetson/blob/master/src/python/piper_train/__main__.py) in piper/src/python/piper_train
 ### 2. UPDATED [lightening.py](https://github.com/robit-man/piper-train-jetson/blob/master/src/python/piper_train/vits/lightning.py) in piper/src/python/piper_train/vits/
