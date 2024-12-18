@@ -8,7 +8,7 @@ BASE_DIR=$(dirname "$(realpath "$0")")
 DATASETS_DIR="$BASE_DIR/datasets"
 DATASET_DIR="$DATASETS_DIR/dataset"
 OUTPUT_DIR="$BASE_DIR/training_output"
-CHECKPOINT_DIR="$BASE_DIR/checkpoints"
+CHECKPOINT_DIR="$BASE_DIR/training_output/checkpoints"  # Updated path
 PIPER_DIR="$BASE_DIR/piper"
 PIPER_REPO_URL="https://github.com/robit-man/piper-train-jetson.git"
 DOCKER_IMAGE="nvcr.io/nvidia/pytorch:24.07-py3-igpu"
@@ -85,11 +85,11 @@ run_docker_pipeline() {
         fi
 
         # Ensure checkpoints directory exists
-        mkdir -p /workspace/checkpoints
+        mkdir -p /workspace/training_output/checkpoints
 
         # Check for existing checkpoints and decide whether to include --ckpt_path
-        if [ -d \"/workspace/checkpoints\" ] && [ \"\$(ls -A /workspace/checkpoints/*.ckpt 2>/dev/null)\" ]; then
-            LATEST_CKPT=\$(ls -t /workspace/checkpoints/*.ckpt | head -n1)
+        if [ -d \"/workspace/training_output/checkpoints\" ] && [ \"\$(ls -A /workspace/training_output/checkpoints/*.ckpt 2>/dev/null)\" ]; then
+            LATEST_CKPT=\$(ls -t /workspace/training_output/checkpoints/*.ckpt | head -n1)
             echo \"Found checkpoint: \$LATEST_CKPT. Resuming training.\"
             PYTHONPATH=\"/workspace/piper/src/python\" python3 -m piper_train \
                 --dataset-dir /workspace/training_output \
@@ -113,7 +113,7 @@ run_docker_pipeline() {
         fi
 
         # Find the latest checkpoint after training
-        NEW_LATEST_CKPT=\$(ls -t /workspace/checkpoints/*.ckpt | head -n1)
+        NEW_LATEST_CKPT=\$(ls -t /workspace/training_output/checkpoints/*.ckpt | head -n1)
 
         # Export trained model
         echo 'Exporting model...'
