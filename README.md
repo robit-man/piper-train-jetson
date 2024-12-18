@@ -3,12 +3,14 @@
 A fast, local neural text to speech system that sounds great and is optimized for the Agx ORIN.
 
 ## PRIMARY CHANGES
-### 1. UPDATED __main__.py in piper/src/python/piper_train
-### 2. UPDATED lightening.py in piper/src/python/piper_train/vits/
-### 3. UPDATED commons.py in piper/src/python/piper_train/vits/
-### 4. ADDED setup.sh to be run next to /datasets/dataset/wav + metadata.csv
+### 1. UPDATED [__main__.py](https://github.com/robit-man/piper-train-jetson/blob/master/src/python/piper_train/__main__.py) in piper/src/python/piper_train
+### 2. UPDATED [lightening.py](https://github.com/robit-man/piper-train-jetson/blob/master/src/python/piper_train/vits/lightning.py) in piper/src/python/piper_train/vits/
+### 3. UPDATED [commons.py](https://github.com/robit-man/piper-train-jetson/blob/master/src/python/piper_train/vits/commons.py) in piper/src/python/piper_train/vits/
+### 4. ADDED [setup.sh](https://github.com/robit-man/piper-train-jetson/blob/master/setup.sh) to be run next to /datasets/dataset/wav + metadata.csv
 
 ## Use setup.sh to train a model, and run the [PIPER-TTS Jetson Container](https://github.com/dusty-nv/jetson-containers/tree/master/packages/speech/piper-tts) to use the model
+
+### Below is the remaining original content in the [PIPER](https://github.com/rhasspy/piper/tree/master) readme
 
 Piper is used in a [variety of projects](#people-using-piper).
 
