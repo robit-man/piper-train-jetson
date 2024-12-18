@@ -5,7 +5,10 @@ A fast, local neural text to speech system that sounds great and is optimized fo
 ## PRIMARY CHANGES
 ### 1. UPDATED __MAIN__.py in piper/src/python/piper_train
 ### 2. UPDATED lightening.py in piper/src/python/piper_train/vits/
-### 3. ADDED setup.sh to be run next to /datasets/dataset/wav + metadata.csv
+### 3. UPDATED commons.py in piper/src/python/piper_train/vits/
+### 4. ADDED setup.sh to be run next to /datasets/dataset/wav + metadata.csv
+
+## Use setup.sh to train a model, and run the [PIPER-TTS Jetson Container](https://github.com/dusty-nv/jetson-containers/tree/master/packages/speech/piper-tts) to use the model
 
 Piper is used in a [variety of projects](#people-using-piper).
 
