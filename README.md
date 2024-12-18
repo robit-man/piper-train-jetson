@@ -10,6 +10,8 @@ A fast, local neural text to speech system that sounds great and is optimized fo
 
 ## Use setup.sh to train a model, and run the [PIPER-TTS Jetson Container](https://github.com/dusty-nv/jetson-containers/tree/master/packages/speech/piper-tts) to use the model
 
+## Use [this repo](https://github.com/robit-man/synthetic_speech_dataset_generator) to generate a synthetic dataset using elevenlabs
+
 ### Below is the remaining original content in the [PIPER](https://github.com/rhasspy/piper/tree/master) readme
 
 Piper is used in a [variety of projects](#people-using-piper).
