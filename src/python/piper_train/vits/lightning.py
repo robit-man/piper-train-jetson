@@ -48,7 +48,7 @@ class VitsModel(pl.LightningModule):
         use_spectral_norm: bool = False,
         gin_channels: int = 0,
         use_sdp: bool = True,
-        segment_size: int = 8192,
+        segment_size: int = 4096,
         dataset: Optional[List[Union[str, Path]]] = None,
         learning_rate: float = 2e-4,
         betas: Tuple[float, float] = (0.8, 0.99),
