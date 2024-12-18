@@ -5,7 +5,7 @@ A fast, local neural text to speech system that sounds great and is optimized fo
 ## PRIMARY CHANGES
 ### 1. UPDATED __MAIN__.py in piper/src/python/piper_train
 ### 2. UPDATED lightening.py in piper/src/python/piper_train/vits/
-### 2. ADDED setup.sh to be run next to /datasets/dataset/wav + metadata.csv
+### 3. ADDED setup.sh to be run next to /datasets/dataset/wav + metadata.csv
 
 Piper is used in a [variety of projects](#people-using-piper).
 
