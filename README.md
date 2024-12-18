@@ -9,6 +9,12 @@ A fast, local neural text to speech system that sounds great and is re-worked an
 ### 4. ADDED [setup.sh](https://github.com/robit-man/piper-train-jetson/blob/master/setup.sh) to be run next to /datasets/dataset/wav + metadata.csv
 
 ## Use setup.sh to train a model, and run the [PIPER-TTS Jetson Container](https://github.com/dusty-nv/jetson-containers/tree/master/packages/speech/piper-tts) to use the model
+1. Create a folder for the project
+2. CD into said folder
+3. Create a folder called 'datasets', then create a sub-folder called 'dataset'. This is where you will put your 'wav' folder and 'metadata.csv' containing the dataset you wish to use
+4. run ```curl -fsSL https://raw.githubusercontent.com/robit-man/piper-train-jetson/master/setup.sh -o setup.sh && chmod +x setup.sh && ./setup.sh``` to pull and execute the setup file in the base folder you created first
+5. Run [jtop](https://pypi.org/project/jetson-stats/) to monitor system utilization
+6. Increase 'segment_size' on line 51 of lightening.py if you have a 64GB orin to ```segment_size: int = 8192```, or leave as ```segment_size: int = 4096``` if using a 32GB orin
 
 ## Use [this repo](https://github.com/robit-man/synthetic_speech_dataset_generator) to generate a synthetic dataset using elevenlabs
 
