@@ -1,6 +1,6 @@
 ![piporin](https://github.com/user-attachments/assets/693ea0aa-44d3-42a0-b4b4-95ec37af8879)
 
-A fast, local neural text to speech system that sounds great and is optimized for the Agx ORIN.
+A fast, local neural text to speech system that sounds great and is re-worked and optimized to execute training on Jetson AGX Orin Platforms using the latest cuda enabled torch container.
 
 ## PRIMARY CHANGES
 ### 1. UPDATED [__main__.py](https://github.com/robit-man/piper-train-jetson/blob/master/src/python/piper_train/__main__.py) in piper/src/python/piper_train
